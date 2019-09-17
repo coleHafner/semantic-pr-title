@@ -16,7 +16,7 @@ module.exports = app => {
       head_branch,
       head_sha,
       pull_requests,
-    } = context.payload.check_suite;
+    } = context.payload.check_suite || context.payload.check_run.check_suite;
 
     if (!pull_requests || !pull_requests.length) {
       context.log('No PRs found. Bailing.')
