@@ -1,10 +1,10 @@
 workflow "Lint PR title on check init" {
-  on = "check_suite.requested"
+  on = "check_suite"
   resolves = "VALIDATE_PR_TITLE"
 }
 
 workflow "Lint PR title on check rerun" {
-  on = "check_run.rerequested"
+  on = "check_run"
   resolves = "VALIDATE_PR_TITLE"
 }
 
