@@ -23,7 +23,7 @@ npm ci
 npm run dev
 ```
 
-# Usage
+## Usage
 This is currently [hosted on Glitch](https://colehafner-pr-title-linter-1.glitch.me) and used internally. It has not been released into the [GitHub Marketplace](https://github.com/marketplace?type=apps) or [Probot 'Featured Apps' Page](https://probot.github.io/apps/) yet.
 
 ## Contributing
