@@ -34,4 +34,4 @@ For more, check out the [Contributing Guide](CONTRIBUTING.md).
 
 ## License
 
-[ISC](LICENSE) © 2019 Cole Hafner <colehafner@gmail.com> (https://colehafner.com)
+[ISC](LICENSE) © 2019 Cole Hafner (https://colehafner.com)
