@@ -57,7 +57,7 @@ module.exports = app => {
       }
       
       const config = await context.config('pr-title-linter.yml', {
-        REGEX: '(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z0-9\s]+\))?(:\s)([a-z0-9\s]+)',
+        REGEX: '(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\\([a-z0-9\\s]+\\))?(:\\s)([a-z0-9\\s]+)',
       });
       
       const regex = new RegExp(config.REGEX, 'i');
