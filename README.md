@@ -12,6 +12,9 @@ npm ci
 npm run dev
 ```
 
+# Usage
+This is currently [hosted on Glitch](https://colehafner-pr-title-linter-1.glitch.me) and used internally. It has not been released into the [GitHub Marketplace](https://github.com/marketplace?type=apps) or [Probot 'Featured Apps' Page](https://probot.github.io/apps/) yet.
+
 ## Contributing
 
 If you have suggestions for how pr-title-linter could be improved, or want to report a bug, open an issue! We'd love all and any contributions.
