@@ -24,7 +24,7 @@ npm run dev
 ```
 
 ## Usage
-This is currently [hosted on Glitch](https://colehafner-pr-title-linter-1.glitch.me) and used internally. It has not been released into the [GitHub Marketplace](https://github.com/marketplace?type=apps) or [Probot 'Featured Apps' Page](https://probot.github.io/apps/) yet.
+This app is [hosted on Glitch](https://colehafner-pr-title-linter-1.glitch.me) and (soon to be) available on [the GitHub marketplace](https://github.com/marketplace/semantic-pr-title).
 
 ## Contributing
 
