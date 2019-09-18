@@ -12,11 +12,12 @@ module.exports = app => {
 		'pull_request.opened',
 		'pull_request.reopened',
 		'check_run.rerequested',
+    'pull_request.edited',
 	], async context => {
 		let conclusion = 'failure',
 			message = '';
 
-		context.log('context', JSON.stringify(context, null, 2));
+		console.log('context', JSON.stringify(context, null, 2));
 		const { payload } = context;
 		const action = payload.action;
 
@@ -30,18 +31,19 @@ module.exports = app => {
 				pr = prs && prs.length ? prs[0] : null;
 				head_sha = payload.check_run.check_suite.head_sha;
 				head_branch = payload.check_run.check_suite.head_branch;
-				break;
+        			break;
 
 			case 'reopened':
-			case 'opened':
+			case 'edited':
+      			case 'opened':
 				pr = payload.pull_request;
 				head_sha = pr.head.sha;
 				head_branch = pr.head.ref;
-				break;
+        			break;
 
 			default:
 				context.log(`action "${action}" not recognized.`);
-				break;
+        			break;
 		}
 
 		// -----------------------------------
