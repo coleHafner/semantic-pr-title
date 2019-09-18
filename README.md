@@ -1,9 +1,9 @@
-# PR Title Linter
+# Semantic PR Title
 
 > A GitHub App built with [Probot](https://github.com/probot/probot) that enforces your PR title to match a user defined regex.
 
 ## Config
-Add a file @ `.github/pr-title-linter.yml` with the following:
+Add a file @ `.github/semantic-pr-title.yml` with the following:
 
 ```
 REGEX: <your regex here>
