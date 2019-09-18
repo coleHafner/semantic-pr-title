@@ -6,100 +6,121 @@
  * @param {import('probot').Application} app
  */
 module.exports = app => {
-  app.log('pr-title-linter app loaded!');
+	app.log('pr-title-linter app loaded!');
 
-  app.on(['check_suite.requested', 'check_run.rerequested'], async context => {
-    let conclusion = 'failure',
-      message = '';
+	app.on([
+		'pull_request.opened',
+		'pull_request.reopened',
+		'check_run.rerequested',
+	], async context => {
+		let conclusion = 'failure',
+			message = '';
 
-    const {
-      head_branch,
-      head_sha,
-      pull_requests,
-    } = context.payload.check_suite || context.payload.check_run.check_suite;
+		context.log('context', JSON.stringify(context, null, 2));
+		const { payload } = context;
+		const action = payload.action;
 
-    if (!pull_requests || !pull_requests.length) {
-      context.log('No PRs found. Bailing.')
-      return;
-    }
+		let pr,
+			head_sha,
+			head_branch;
 
-    // -----------------------------------
-    // start the check
-    // -----------------------------------
-    const check = (await context.github.checks.create(context.repo({
-      name: 'pr-title-linter',
-      head_branch,
-      head_sha,
-      status: 'in_progress',
-      started_at: new Date(),
-      output: {
-        title: 'Checking PR title!',
-        summary: 'Let\'s make sure the PR title complies with commit-lint rules.'
-      }
-    }))).data;
+		switch (action) {
+			case 'rerequested':
+				const prs = payload.check_run.check_suite.pull_requests;
+				pr = prs && prs.length ? prs[0] : null;
+				head_sha = payload.check_run.check_suite.head_sha;
+				head_branch = payload.check_run.check_suite.head_branch;
+				break;
 
-    const {
-      repo,
-      owner,
-    } = await context.repo();
+			case 'reopened':
+			case 'opened':
+				pr = payload.pull_request;
+				head_sha = pr.head.sha;
+				head_branch = pr.head.ref;
+				break;
 
-    try {
-      const prQuery = {
-        owner,
-        repo,
-        number: pull_requests[0].number,
-      };
-      
-      const pr = (await context.github.pullRequests.get(prQuery)).data;
-      
-      if (!pr) {
-        throw new Error(`Error: could not find pull request for query "${JSON.stringify(prQuery)}".`);
-      }
-      
-      const config = await context.config('pr-title-linter.yml', {
-        REGEX: '(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\\([a-z0-9\\s]+\\))?(:\\s)([a-z0-9\\s]+)',
-      });
-      
-      const regex = new RegExp(config.REGEX, 'i');
-      context.log.info(`REGEX is "${config.REGEX}"`);
-      
-      if (typeof pr.title === 'undefined') {
-        throw new Error(`No title found for PR #${JSON.stringify(prQuery)}`);
-      }
-      
-      message = `PR Title "${pr.title}" does not match regex "${config.REGEX}".`;
+			default:
+				context.log(`action "${action}" not recognized.`);
+				break;
+		}
 
-      if (regex.test(pr.title) === true) {
-        conclusion = 'success';
-        message = `PR title "${pr.title}" is VALID! Well done.`;
-      }
+		// -----------------------------------
+		// start the check
+		// -----------------------------------
+		const check = (await context.github.checks.create(context.repo({
+			name: 'pr-title-linter',
+			head_branch,
+			head_sha,
+			status: 'in_progress',
+			started_at: new Date(),
+			output: {
+				title: 'Checking PR title!',
+				summary: 'Let\'s make sure the PR title complies with commit-lint rules.'
+			}
+		}))).data;
 
-      context.log(`message: ${message}`);
-    }catch (err) {
-      app.log.error(err);
+		const {
+			repo,
+			owner,
+		} = await context.repo();
 
-    }finally {
-      // -----------------------------------
-      // update check
-      // -----------------------------------
-      return context.github.checks.update({
-        repo,
-        owner,
-        check_run_id: check.id,
-        status: 'completed',
-        completed_at: new Date(),
-        conclusion,
-        output: {
-          title: 'Check complete!',
-          summary: message,
-        }
-      });
-    }
-  });
+		try {
+			if (!pr) {
+				throw new Error(`No PRs found for delivery #<a target="_blank" href="https://github.com/settings/apps/pr-title-linter/advanced#${context.id}">${context.id}</a>.`);
+			}
 
-  // For more information on building apps:
-  // https://probot.github.io/docs/
+			let { title } = pr;
 
-  // To get your app running against GitHub, see:
-  // https://probot.github.io/docs/development/
+			if (!title) {
+				const prQuery = {
+					owner,
+					repo,
+					number: pr.number,
+				};
+
+				const fullPr = (await context.github.pullRequests.get(prQuery)).data;
+
+				if (!fullPr) {
+					throw new Error(`Error: could not find pull request for query "${JSON.stringify(prQuery, null, 2)}".`);
+				}
+
+				title = fullPr.title;
+			}
+
+			const config = await context.config('pr-title-linter.yml', {
+				REGEX: '(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\\([a-z0-9\\s]+\\))?(:\\s)([a-z0-9\\s]+)',
+			});
+
+			const regex = new RegExp(config.REGEX, 'i');
+			context.log.info(`REGEX is "${config.REGEX}"`);
+			message = `PR Title "${title}" does not match regex "${config.REGEX}".`;
+
+			if (regex.test(title) === true) {
+				conclusion = 'success';
+				message = `PR title "${title}" is valid!`;
+			}
+
+			context.log(`message: ${message}`);
+		} catch (err) {
+			message = `${err}`;
+			app.log.error(err);
+
+		} finally {
+			// -----------------------------------
+			// update check
+			// -----------------------------------
+			return context.github.checks.update({
+				repo,
+				owner,
+				check_run_id: check.id,
+				status: 'completed',
+				completed_at: new Date(),
+				conclusion,
+				output: {
+					title: conclusion === 'success' ? 'Check succeeded!' : 'Check failed!',
+					summary: message,
+				}
+			});
+		}
+	});
 }
