@@ -6,18 +6,18 @@
  * @param {import('probot').Application} app
  */
 module.exports = app => {
-	app.log('pr-title-linter app loaded!');
+	app.log('Semantic PR Title app loaded!');
 
 	app.on([
-		'pull_request.opened',
-		'pull_request.reopened',
-		'check_run.rerequested',
-    'pull_request.edited',
+	    'pull_request.opened',
+	    'pull_request.reopened',
+	    'check_run.rerequested',
+	    'pull_request.edited',
 	], async context => {
 		let conclusion = 'failure',
 			message = '';
 
-		console.log('context', JSON.stringify(context, null, 2));
+		context.log.info('context', JSON.stringify(context, null, 2));
 		const { payload } = context;
 		const action = payload.action;
 
@@ -42,7 +42,7 @@ module.exports = app => {
         			break;
 
 			default:
-				context.log(`action "${action}" not recognized.`);
+				context.log.info(`action "${action}" not recognized.`);
         			break;
 		}
 
@@ -50,14 +50,14 @@ module.exports = app => {
 		// start the check
 		// -----------------------------------
 		const check = (await context.github.checks.create(context.repo({
-			name: 'pr-title-linter',
+			name: 'Validate Title',
 			head_branch,
 			head_sha,
 			status: 'in_progress',
 			started_at: new Date(),
 			output: {
 				title: 'Checking PR title!',
-				summary: 'Let\'s make sure the PR title complies with commit-lint rules.'
+				summary: 'Let\'s make sure the PR title is valid.'
 			}
 		}))).data;
 
@@ -68,7 +68,7 @@ module.exports = app => {
 
 		try {
 			if (!pr) {
-				throw new Error(`No PRs found for delivery #<a target="_blank" href="https://github.com/settings/apps/pr-title-linter/advanced#${context.id}">${context.id}</a>.`);
+				throw new Error(`No PRs found for delivery #<a target="_blank" href="https://github.com/settings/apps/semantic-pr-title/advanced#${context.id}">${context.id}</a>.`);
 			}
 
 			let { title } = pr;
@@ -89,7 +89,7 @@ module.exports = app => {
 				title = fullPr.title;
 			}
 
-			const config = await context.config('pr-title-linter.yml', {
+			const config = await context.config('semantic-pr-title.yml', {
 				REGEX: '(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\\([a-z0-9\\s]+\\))?(:\\s)([a-z0-9\\s]+)',
 			});
 
