@@ -24,7 +24,7 @@ npm run dev
 ```
 
 ## Usage
-This app is [hosted on Glitch](https://colehafner-pr-title-linter-1.glitch.me) and (soon to be) available on [the GitHub marketplace](https://github.com/marketplace/semantic-pr-title).
+This app is [hosted on Glitch](https://colehafner-pr-title-linter-1.glitch.me) and available on [the GitHub marketplace](https://github.com/marketplace/semantic-pr-title).
 
 ## Contributing
 
