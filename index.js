@@ -9,13 +9,12 @@ module.exports = app => {
   app.log('Semantic PR Title app loaded!')
 
   app.on([
-	    'pull_request.opened',
-	    'pull_request.reopened',
-	    'check_run.rerequested',
-	    'pull_request.edited'
+    'pull_request.opened',
+    'pull_request.reopened',
+    'check_run.rerequested',
+    'pull_request.edited'
   ], async context => {
     let conclusion = 'failure'
-
     let message = ''
 
     context.log.info('context', JSON.stringify(context, null, 2))
@@ -23,28 +22,28 @@ module.exports = app => {
     const action = payload.action
 
     let pr,
-      head_sha,
-      head_branch
+      headSha,
+      headBranch
 
     switch (action) {
       case 'rerequested':
         const prs = payload.check_run.check_suite.pull_requests
         pr = prs && prs.length ? prs[0] : null
-        head_sha = payload.check_run.check_suite.head_sha
-        head_branch = payload.check_run.check_suite.head_branch
-        			break
+        headSha = payload.check_run.check_suite.head_sha
+        headBranch = payload.check_run.check_suite.head_branch
+        break
 
       case 'reopened':
       case 'edited':
-      			case 'opened':
+      case 'opened':
         pr = payload.pull_request
-        head_sha = pr.head.sha
-        head_branch = pr.head.ref
-        			break
+        headSha = pr.head.sha
+        headBranch = pr.head.ref
+        break
 
       default:
         context.log.info(`action "${action}" not recognized.`)
-        			break
+        break
     }
 
     // -----------------------------------
@@ -52,8 +51,8 @@ module.exports = app => {
     // -----------------------------------
     const check = (await context.github.checks.create(context.repo({
       name: 'Validate Title',
-      head_branch,
-      head_sha,
+      head_branch: headBranch,
+      head_sha: headSha,
       status: 'in_progress',
       started_at: new Date(),
       output: {
@@ -107,22 +106,22 @@ module.exports = app => {
     } catch (err) {
       message = `${err}`
       app.log.error(err)
-    } finally {
-      // -----------------------------------
-      // update check
-      // -----------------------------------
-      return context.github.checks.update({
-        repo,
-        owner,
-        check_run_id: check.id,
-        status: 'completed',
-        completed_at: new Date(),
-        conclusion,
-        output: {
-          title: conclusion === 'success' ? 'Check succeeded!' : 'Check failed!',
-          summary: message
-        }
-      })
     }
+
+    // -----------------------------------
+    // update check
+    // -----------------------------------
+    return context.github.checks.update({
+      repo,
+      owner,
+      check_run_id: check.id,
+      status: 'completed',
+      completed_at: new Date(),
+      conclusion,
+      output: {
+        title: conclusion === 'success' ? 'Check succeeded!' : 'Check failed!',
+        summary: message
+      }
+    })
   })
 }
